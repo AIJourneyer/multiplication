@@ -1,0 +1,36 @@
+name: Deploy to Google Cloud Functions (2nd Gen)
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source code
+        uses: actions/checkout@v3
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_CREDENTIALS }}
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ secrets.GCP_PROJECT_ID }}
+
+      - name: Deploy to Cloud Functions (2nd Gen)
+        run: |
+          gcloud functions deploy multiply_arrays \
+            --gen2 \
+            --runtime=python310 \
+            --region=us-central1 \
+            --entry-point=multiply_arrays \
+            --trigger-http \
+            --allow-unauthenticated \
+            --source=. \
+            --project=${{ secrets.GCP_PROJECT_ID }}
